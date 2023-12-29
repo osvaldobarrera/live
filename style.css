@@ -171,6 +171,25 @@ html, body {
 /* Stupid pin shit. Seriously, not being able to read 
 *  current values and add to that is so annoying.. 
 */
+.bottomright{
+    display: table;
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    z-index: 100;
+}
+.scan, .copy {
+    margin: 0;
+    width: 10%;
+    height: 10%;
+}
+.scan p, .copy p {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
 .pin {
     display: table;
     position: absolute;

@@ -1,4 +1,27 @@
-// Jake Ledoux, 2019
+/********************************************************************************** *
+* Peek.FM
+*
+* Jake Ledoux, @ 2019
+* Diego Salazar Barrera, @ 05 September 2023
+* Latest Revision: 05 Sep 2023
+*
+*
+* This little web app is a friend Explorer for Last.fm.
+* With this you can see what other Last.fm users are playing and which users
+* they follow. Powered by Youtube. This authorization is necessary to allow 
+* the app to scrobble the tracks you listen.
+* 
+* write to me at:
+*
+* do.salazarbarrera@gmail.com
+*
+* send issues to
+* 
+* https://github.com/osvaldobarrera/peekfm
+*  
+* End Of Comments
+* ********************************************************************************* */
+// 
 
 // DONE: Force now-playing if pre-scrobbles are detected (for CD an vinyl scrobblers)
 // DONE: Refreshing
@@ -15,10 +38,23 @@
 // DONE: Fixed background scrolling
 
 var refreshInterval;
+//var USERNAME = $("meta[property='username']").attr("content");
+var USERNAME;
+var USER;
+var FRIENDS;
 
 function openLink(url) {
     window.open(url, '_blank');
 }
+
+window.addEventListener("popstate", (event) => {
+  console.log(
+    `location: ${document.location}, state: ${JSON.stringify(event.state)}`,
+  );
+  USERNAME = (event.state).usernameState;
+  $(".user-tile").remove();
+  originalMain();
+});
 
 function createTile(size, username, userImg, userHref, title, artist, currentlyPlaying, timestamp, imgUrl, titleHref, artistHref) {
     tile = document.createElement("div");
@@ -76,7 +112,38 @@ function createTile(size, username, userImg, userHref, title, artist, currentlyP
         $(pin).click(togglePin);
         tile.append(pin);
         // </pinshit>
-
+        
+        // <usershit>
+        let bottomright = document.createElement("div");
+        $(bottomright).addClass("bottomright");
+        
+        let eye = document.createElement("div");
+        let eyemoji = document.createElement("p");
+        $(eyemoji).text("🔎");
+        $(eye).append(eyemoji);
+        $(eye).addClass("scan");
+        $(eye).click(function(){
+          clearInterval(refreshInterval);
+          USERNAME = username;
+          history.pushState({ usernameState: USERNAME }, "", "?u="+USERNAME);
+          $(".user-tile").remove();          
+          originalMain();
+        });
+        
+        let copy = document.createElement("div");
+        let copyemoji = document.createElement("p");
+        $(copyemoji).text("📄");
+        $(copy).append(copyemoji);
+        $(copy).addClass("copy");
+        $(copy).click(function(){
+          navigator.clipboard.writeText(username);
+        });
+          
+        $(bottomright).append(eye);
+        $(bottomright).append(copy);
+        tile.append(bottomright);
+        // </usershit>
+        
         // Song shadow
         temp = document.createElement("div");
         temp.classList.add("shadow");
@@ -214,23 +281,6 @@ function refreshLastFM(friends) {
 
 }
 
-var USERNAME = $("meta[property='username']").attr("content");
-var USER;
-var FRIENDS;
-
-// Document ready
-$(function() {
-    getInfo(USERNAME, function (userInfo) {
-        USER = userInfo.user;
-        getFriends(USERNAME, function(friends) {
-            FRIENDS = friends;
-            refreshLastFM(FRIENDS);
-            refreshInterval = setInterval(function() {refreshLastFM(FRIENDS)}, 10000);
-        });
-    });
-    window.onresize = resize;
-})
-
 function getSize() {
     let columns = Math.round($('body').width() / 350);
     let size = $('body').width() / columns;
@@ -274,3 +324,53 @@ function setErrorMessage(state) {
     }
 }
 // $(window).resize(resize);
+
+function originalMain(){
+  
+  // Document ready
+  $(function() {
+      getInfo(USERNAME, function (userInfo) {
+          USER = userInfo.user;
+          getFriends(USERNAME, function(friends) {
+              FRIENDS = friends;
+              refreshLastFM(FRIENDS);
+              refreshInterval = setInterval(function() {refreshLastFM(FRIENDS)}, 10000);
+          });
+      });
+      window.onresize = resize;
+  })
+}
+
+
+
+jQuery.fn.showV = function() {
+    this.css('display', 'block');
+}
+
+jQuery.fn.hideV = function() {
+    this.css('display', 'none');
+}
+
+function setUsername(){
+    USERNAME = document.getElementById("targertUserGUI").value;
+    history.pushState({ usernameState: USERNAME }, "", "?u="+USERNAME);
+    document.querySelector('form button').click();
+    $("#userInput").hideV();
+    $("#original").showV();
+    originalMain();
+}
+
+function checkParams(){
+  var urlParams = new URLSearchParams(window.location.search);
+  if(urlParams.get('u')){
+    USERNAME=urlParams.get('u');
+    history.pushState({ usernameState: USERNAME }, "", "?u="+USERNAME);
+    $("#userInput").hideV();
+    $("#original").showV();
+    originalMain();
+  }
+}
+
+$(document).ready(function() {
+    $("#auth").click(setUsername);
+});

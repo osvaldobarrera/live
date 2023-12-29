@@ -1,5 +1,5 @@
-const LAST_KEY = "9e89b44de1ff37c5246ad0af18406454";
-const LAST_SECRET = "147320ea9b8930fe196a4231da50ada4";
+const LAST_KEY = "YOUR_KEY";
+const LAST_SECRET = "YOUR_SECRET";
 var LAST_SESSION = "";
 var LOVED_TRACKS = [];
 
